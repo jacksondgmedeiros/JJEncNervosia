@@ -27,4 +27,7 @@ public interface EncomendaRepository extends JpaRepository<Encomenda, UUID> {
             @Param("inicioDoDia") LocalDateTime inicioDoDia,
             @Param("inicioProximoDia") LocalDateTime inicioProximoDia
     );
+
+    @Query("select max(e.identificadorGeral) from Encomenda e")
+    Optional<Long> findMaxIdentificadorGeral();
 }

@@ -14,7 +14,10 @@
             <h1>Controle de Encomendas</h1>
             <p class="subtitle">Registro rápido, QR Code imediato e visualização simples para retirada.</p>
         </div>
-        <button id="refreshButton" class="secondary-button" type="button">Atualizar agora</button>
+        <div class="topbar-actions">
+            <button id="reprintPendingButton" class="secondary-button" type="button">Reimprimir pendentes</button>
+            <button id="refreshButton" class="secondary-button" type="button">Atualizar agora</button>
+        </div>
     </header>
 
     <main class="grid-layout">
@@ -53,32 +56,14 @@
             <div id="emptyState" class="empty-state">Cadastre uma encomenda para ver o QR Code, o código do dia e a prévia da etiqueta.</div>
             <div id="resultadoCadastro" class="hidden">
                 <div id="codigoGrande" class="codigo-destaque">#000</div>
+                <p id="codigoSecundario" class="codigo-secundario">ID geral 000000</p>
                 <div id="corBadge" class="cor-badge">VERDE</div>
                 <div id="etiquetaResumo" class="etiqueta-resumo">
-                    <p id="resultadoNome" class="result-name"></p>
-                    <p id="resultadoDescricao" class="result-description"></p>
+                    <p id="resultadoUnidade" class="result-name"></p>
                     <img id="qrCodeImage" alt="QR Code da encomenda">
                     <p id="resultadoData" class="result-date"></p>
                 </div>
-                <button id="previewPrintButton" class="secondary-button hidden" type="button">Visualizar impressão da etiqueta</button>
-                <div id="printPreview" class="print-preview hidden">
-                    <div class="print-preview-header">
-                        <h3>Pré-visualização da etiqueta</h3>
-                        <button id="printButton" class="primary-button" type="button">Imprimir agora</button>
-                    </div>
-                    <div id="etiquetaImpressao" class="etiqueta-impressao">
-                        <p class="etiqueta-titulo">Etiqueta de Encomenda</p>
-                        <p id="printNomeMorador" class="etiqueta-nome"></p>
-                        <div id="printCorBadge" class="cor-badge etiqueta-cor">VERDE</div>
-                        <img id="printQrCodeImage" alt="QR Code da etiqueta">
-                        <div class="etiqueta-infos">
-                            <p><strong>Código:</strong> <span id="printCodigo"></span></p>
-                            <p><strong>Unidade:</strong> <span id="printApartamento"></span></p>
-                            <p><strong>Registrada em:</strong> <span id="printDataRegistro"></span></p>
-                            <p><strong>Descrição:</strong> <span id="printDescricao"></span></p>
-                        </div>
-                    </div>
-                </div>
+                <button id="previewPrintButton" class="secondary-button hidden" type="button">Abrir etiqueta para impressão</button>
             </div>
         </section>
     </main>
@@ -101,6 +86,7 @@
                 <tr>
                     <th>Apartamento</th>
                     <th>Código</th>
+                    <th>ID geral</th>
                     <th>Cor</th>
                     <th>Status</th>
                     <th>Data</th>
@@ -109,12 +95,29 @@
                 </thead>
                 <tbody id="encomendasTableBody">
                 <tr>
-                    <td colspan="6" class="loading-row">Carregando encomendas...</td>
+                    <td colspan="7" class="loading-row">Carregando encomendas...</td>
                 </tr>
                 </tbody>
             </table>
         </div>
     </section>
+</div>
+
+<div id="printModal" class="modal hidden" aria-hidden="true">
+    <div class="modal-backdrop" data-close-modal="true"></div>
+    <div class="modal-dialog" role="dialog" aria-modal="true" aria-labelledby="printModalTitle">
+        <div class="modal-header">
+            <div>
+                <h3 id="printModalTitle">Impressão da etiqueta</h3>
+                <p id="printModalSubtitle" class="modal-subtitle">Confira os dados antes de imprimir.</p>
+            </div>
+            <div class="modal-actions">
+                <button id="printButton" class="primary-button" type="button">Imprimir agora</button>
+                <button id="closePrintModalButton" class="ghost-button" type="button" aria-label="Fechar modal">✕</button>
+            </div>
+        </div>
+        <div id="printLabelsContainer" class="print-labels-container"></div>
+    </div>
 </div>
 
 <script src="app.js"></script>

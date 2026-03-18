@@ -24,6 +24,10 @@ body {
     color: var(--text);
 }
 
+body.modal-open {
+    overflow: hidden;
+}
+
 img {
     max-width: 100%;
     display: block;
@@ -36,22 +40,30 @@ img {
 }
 
 .topbar,
+.topbar-actions,
 .grid-layout,
 .table-header,
 .switch-label,
 .status-chip,
 .action-buttons,
 .field-row,
-.print-preview-header {
+.modal-header,
+.modal-actions {
     display: flex;
 }
 
 .topbar,
 .table-header,
-.print-preview-header {
+.modal-header {
     justify-content: space-between;
     align-items: center;
     gap: 16px;
+}
+
+.topbar-actions,
+.modal-actions,
+.action-buttons {
+    gap: 8px;
 }
 
 .grid-layout {
@@ -91,9 +103,12 @@ p {
 
 .subtitle,
 .table-header p,
-.result-description,
 .form-message,
-.result-date {
+.result-date,
+.codigo-secundario,
+.modal-subtitle,
+.etiqueta-titulo,
+.etiqueta-identificador {
     color: var(--muted);
 }
 
@@ -165,6 +180,17 @@ button {
     background: #d7e6ff;
 }
 
+.ghost-button {
+    background: transparent;
+    color: var(--muted);
+    border: 1px solid var(--border);
+    padding-inline: 14px;
+}
+
+.ghost-button:hover {
+    background: #f8fbff;
+}
+
 .result-card {
     text-align: center;
 }
@@ -173,11 +199,18 @@ button {
     font-size: clamp(3rem, 10vw, 5rem);
     font-weight: 800;
     letter-spacing: 0.08em;
+    margin-bottom: 8px;
+}
+
+.codigo-secundario {
+    font-size: 0.95rem;
+    font-weight: 700;
     margin-bottom: 16px;
 }
 
 .cor-badge,
-.cor-cell {
+.cor-cell,
+.table-id {
     display: inline-flex;
     align-items: center;
     justify-content: center;
@@ -185,6 +218,10 @@ button {
     border-radius: 999px;
     font-weight: 700;
     color: #0f172a;
+}
+
+.table-id {
+    background: #e2e8f0;
 }
 
 .etiqueta-resumo {
@@ -201,25 +238,47 @@ button {
 }
 
 #qrCodeImage,
-#printQrCodeImage {
+.etiqueta-impressao img {
     width: 180px;
     height: 180px;
     object-fit: contain;
     margin: 0 auto;
 }
 
-.print-preview {
+.modal {
+    position: fixed;
+    inset: 0;
+    z-index: 1000;
+}
+
+.modal-backdrop {
+    position: absolute;
+    inset: 0;
+    background: rgba(15, 23, 42, 0.58);
+    backdrop-filter: blur(2px);
+}
+
+.modal-dialog {
+    position: relative;
+    z-index: 1;
+    width: min(960px, calc(100% - 32px));
+    max-height: calc(100vh - 32px);
+    margin: 16px auto;
+    overflow: auto;
+    background: white;
+    border-radius: 24px;
+    padding: 24px;
+    box-shadow: 0 24px 80px rgba(15, 23, 42, 0.24);
+}
+
+.print-labels-container {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 16px;
     margin-top: 20px;
-    border: 1px dashed var(--border);
-    border-radius: 18px;
-    padding: 20px;
-    background: #f8fbff;
-    text-align: left;
 }
 
 .etiqueta-impressao {
-    width: min(100%, 360px);
-    margin: 0 auto;
     background: white;
     border: 1px solid #cbd5e1;
     border-radius: 18px;
@@ -228,25 +287,29 @@ button {
     display: grid;
     justify-items: center;
     gap: 12px;
+    break-inside: avoid;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
 }
 
-.etiqueta-titulo {
+.etiqueta-titulo,
+.etiqueta-identificador {
     font-size: 0.9rem;
     text-transform: uppercase;
     letter-spacing: 0.08em;
-    color: var(--muted);
     margin-bottom: 0;
+    text-align: center;
 }
 
-.etiqueta-nome {
-    font-size: 1.35rem;
-    font-weight: 700;
-    text-align: center;
-    margin-bottom: 0;
+.etiqueta-identificador {
+    font-size: 0.82rem;
 }
 
 .etiqueta-cor {
     margin-bottom: 4px;
+    min-width: 140px;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
 }
 
 .etiqueta-infos {
@@ -318,10 +381,6 @@ th {
     color: var(--muted);
 }
 
-.action-buttons {
-    gap: 8px;
-}
-
 .action-button {
     padding: 10px 12px;
     border-radius: 10px;
@@ -343,49 +402,78 @@ th {
 
 @media (max-width: 900px) {
     .topbar,
+    .topbar-actions,
     .grid-layout,
     .table-header,
     .field-row,
-    .print-preview-header {
+    .modal-header,
+    .modal-actions {
         flex-direction: column;
         align-items: stretch;
+    }
+
+    .modal-dialog {
+        width: calc(100% - 24px);
+        margin: 12px;
     }
 }
 
 @media print {
+    @page {
+        margin: 12mm;
+    }
+
     body {
         background: white;
     }
 
-    .topbar,
-    .form-card,
-    .table-card,
-    #emptyState,
-    #codigoGrande,
-    #corBadge,
-    #etiquetaResumo,
-    #previewPrintButton,
-    .print-preview-header {
+    body * {
+        visibility: hidden;
+    }
+
+    #printModal,
+    #printModal * {
+        visibility: visible;
+    }
+
+    #printModal {
+        position: static;
+        inset: auto;
+    }
+
+    .modal-backdrop,
+    .modal-header {
         display: none !important;
     }
 
-    .app-shell,
-    .grid-layout,
-    .result-card,
-    #resultadoCadastro,
-    #printPreview {
+    .modal,
+    .modal-dialog,
+    .print-labels-container {
         display: block !important;
+        width: 100%;
+        max-height: none;
         margin: 0;
         padding: 0;
-        box-shadow: none;
         border: 0;
+        box-shadow: none;
+        overflow: visible;
     }
 
     .etiqueta-impressao {
-        width: 100%;
-        max-width: 360px;
+        width: 86mm;
+        min-height: auto;
+        margin: 0 auto 10mm;
         border: 1px solid #000;
         box-shadow: none;
         page-break-inside: avoid;
+        -webkit-print-color-adjust: exact;
+        print-color-adjust: exact;
+    }
+
+    .cor-badge,
+    .cor-cell,
+    .etiqueta-cor {
+        -webkit-print-color-adjust: exact !important;
+        print-color-adjust: exact !important;
     }
 }

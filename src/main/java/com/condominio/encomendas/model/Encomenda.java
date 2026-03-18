@@ -26,6 +26,9 @@ public class Encomenda {
     @Column(nullable = false)
     private Integer codigoDiario;
 
+    @Column(nullable = false, unique = true)
+    private Long identificadorGeral;
+
     @Column(nullable = false)
     private String cor;
 
@@ -76,6 +79,14 @@ public class Encomenda {
 
     public void setCodigoDiario(Integer codigoDiario) {
         this.codigoDiario = codigoDiario;
+    }
+
+    public Long getIdentificadorGeral() {
+        return identificadorGeral;
+    }
+
+    public void setIdentificadorGeral(Long identificadorGeral) {
+        this.identificadorGeral = identificadorGeral;
     }
 
     public String getCor() {

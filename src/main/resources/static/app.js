@@ -3,24 +3,22 @@ const formMessage = document.getElementById('formMessage');
 const resultadoCadastro = document.getElementById('resultadoCadastro');
 const emptyState = document.getElementById('emptyState');
 const codigoGrande = document.getElementById('codigoGrande');
+const codigoSecundario = document.getElementById('codigoSecundario');
 const corBadge = document.getElementById('corBadge');
 const qrCodeImage = document.getElementById('qrCodeImage');
-const resultadoNome = document.getElementById('resultadoNome');
-const resultadoDescricao = document.getElementById('resultadoDescricao');
+const resultadoUnidade = document.getElementById('resultadoUnidade');
 const resultadoData = document.getElementById('resultadoData');
 const previewPrintButton = document.getElementById('previewPrintButton');
-const printPreview = document.getElementById('printPreview');
 const printButton = document.getElementById('printButton');
-const printNomeMorador = document.getElementById('printNomeMorador');
-const printCorBadge = document.getElementById('printCorBadge');
-const printQrCodeImage = document.getElementById('printQrCodeImage');
-const printCodigo = document.getElementById('printCodigo');
-const printApartamento = document.getElementById('printApartamento');
-const printDataRegistro = document.getElementById('printDataRegistro');
-const printDescricao = document.getElementById('printDescricao');
+const printModal = document.getElementById('printModal');
+const printModalTitle = document.getElementById('printModalTitle');
+const printModalSubtitle = document.getElementById('printModalSubtitle');
+const printLabelsContainer = document.getElementById('printLabelsContainer');
+const closePrintModalButton = document.getElementById('closePrintModalButton');
 const tableBody = document.getElementById('encomendasTableBody');
 const somentePendentes = document.getElementById('somentePendentes');
 const refreshButton = document.getElementById('refreshButton');
+const reprintPendingButton = document.getElementById('reprintPendingButton');
 
 const COLOR_MAP = {
     VERDE: '#86efac',
@@ -29,6 +27,7 @@ const COLOR_MAP = {
 };
 
 let ultimaEncomendaRegistrada = null;
+let etiquetaAberta = [];
 
 async function apiFetch(url, options = {}) {
     const response = await fetch(url, {
@@ -75,52 +74,72 @@ function formatarDataEtiqueta(dataIso) {
     }).format(new Date(dataIso));
 }
 
-function obterNomeMorador(encomenda) {
-    return encomenda.nomeMorador?.trim() || 'Morador não informado';
+function obterQrCodeSrc(encomenda) {
+    if (encomenda.qrCodeBase64) {
+        return `data:image/png;base64,${encomenda.qrCodeBase64}`;
+    }
+    return encomenda.qrCodeImageUrl;
 }
 
-function obterDescricao(encomenda) {
-    return encomenda.descricao?.trim() || 'Sem descrição';
-}
-
-function popularEtiqueta(encomenda) {
-    const nomeMorador = obterNomeMorador(encomenda);
-    const descricao = obterDescricao(encomenda);
+function criarEtiquetaHtml(encomenda) {
+    const cor = COLOR_MAP[encomenda.cor] || '#e5e7eb';
     const dataRegistro = formatarDataEtiqueta(encomenda.dataCriacao);
-    const unidade = encomenda.apartamento;
-    const qrCodeSrc = `data:image/png;base64,${encomenda.qrCodeBase64}`;
+    const qrCodeSrc = obterQrCodeSrc(encomenda);
 
-    resultadoNome.textContent = nomeMorador;
-    resultadoDescricao.textContent = `${unidade} • ${descricao}`;
-    resultadoData.textContent = `Registrada em ${dataRegistro}`;
+    return `
+        <article class="etiqueta-impressao">
+            <p class="etiqueta-titulo">Etiqueta de Encomenda</p>
+            <p class="etiqueta-identificador">ID geral ${encomenda.identificadorGeral}</p>
+            <div class="cor-badge etiqueta-cor" style="background:${cor}">${encomenda.cor}</div>
+            <img src="${qrCodeSrc}" alt="QR Code da etiqueta da encomenda ${encomenda.codigoFormatado}">
+            <div class="etiqueta-infos">
+                <p><strong>Código do dia:</strong> <span>${encomenda.codigoFormatado}</span></p>
+                <p><strong>Unidade:</strong> <span>${encomenda.apartamento}</span></p>
+                <p><strong>Registrada em:</strong> <span>${dataRegistro}</span></p>
+                <p><strong>Status:</strong> <span>${encomenda.status}</span></p>
+            </div>
+        </article>
+    `;
+}
 
-    printNomeMorador.textContent = nomeMorador;
-    printCodigo.textContent = encomenda.codigoFormatado;
-    printApartamento.textContent = unidade;
-    printDataRegistro.textContent = dataRegistro;
-    printDescricao.textContent = descricao;
-    printQrCodeImage.src = qrCodeSrc;
-    aplicarCor(printCorBadge, encomenda.cor);
-    printCorBadge.textContent = encomenda.cor;
+function popularResumo(encomenda) {
+    codigoGrande.textContent = encomenda.codigoFormatado;
+    codigoSecundario.textContent = `ID geral ${encomenda.identificadorGeral}`;
+    corBadge.textContent = encomenda.cor;
+    aplicarCor(corBadge, encomenda.cor);
+    resultadoUnidade.textContent = encomenda.apartamento;
+    resultadoData.textContent = `Registrada em ${formatarDataEtiqueta(encomenda.dataCriacao)}`;
+    qrCodeImage.src = obterQrCodeSrc(encomenda);
+}
 
-    qrCodeImage.src = qrCodeSrc;
+function abrirModalImpressao(encomendas, titulo, subtitulo) {
+    etiquetaAberta = encomendas;
+    printModalTitle.textContent = titulo;
+    printModalSubtitle.textContent = subtitulo;
+    printLabelsContainer.innerHTML = encomendas.map(criarEtiquetaHtml).join('');
+    printModal.classList.remove('hidden');
+    document.body.classList.add('modal-open');
+    printModal.setAttribute('aria-hidden', 'false');
+}
+
+function fecharModalImpressao() {
+    etiquetaAberta = [];
+    printModal.classList.add('hidden');
+    document.body.classList.remove('modal-open');
+    printModal.setAttribute('aria-hidden', 'true');
 }
 
 function renderResultadoCadastro(encomenda) {
     ultimaEncomendaRegistrada = encomenda;
     emptyState.classList.add('hidden');
     resultadoCadastro.classList.remove('hidden');
-    codigoGrande.textContent = encomenda.codigoFormatado;
-    corBadge.textContent = encomenda.cor;
-    aplicarCor(corBadge, encomenda.cor);
-    popularEtiqueta(encomenda);
+    popularResumo(encomenda);
     previewPrintButton.classList.remove('hidden');
-    printPreview.classList.add('hidden');
 }
 
 function renderTabela(encomendas) {
     if (!encomendas.length) {
-        tableBody.innerHTML = '<tr><td colspan="6" class="empty-row">Nenhuma encomenda encontrada.</td></tr>';
+        tableBody.innerHTML = '<tr><td colspan="7" class="empty-row">Nenhuma encomenda encontrada.</td></tr>';
         return;
     }
 
@@ -132,6 +151,7 @@ function renderTabela(encomendas) {
             <tr>
                 <td>${encomenda.apartamento}</td>
                 <td><strong>${encomenda.codigoFormatado}</strong></td>
+                <td><span class="table-id">${encomenda.identificadorGeral}</span></td>
                 <td><span class="cor-cell" style="background:${COLOR_MAP[encomenda.cor] || '#e5e7eb'}">${encomenda.cor}</span></td>
                 <td>
                     <span class="status-chip">
@@ -143,7 +163,7 @@ function renderTabela(encomendas) {
                 <td>
                     <div class="action-buttons">
                         <button class="secondary-button action-button" data-action="retirar" data-id="${encomenda.id}" ${disabled}>Retirar</button>
-                        <a class="secondary-button action-button" href="${encomenda.qrCodeImageUrl}" target="_blank" rel="noreferrer">QR</a>
+                        <button class="secondary-button action-button" data-action="imprimir" data-id="${encomenda.id}">Imprimir</button>
                     </div>
                 </td>
             </tr>
@@ -157,7 +177,7 @@ async function carregarEncomendas() {
         const encomendas = await apiFetch(endpoint, { method: 'GET' });
         renderTabela(encomendas);
     } catch (error) {
-        tableBody.innerHTML = `<tr><td colspan="6" class="empty-row">${error.message}</td></tr>`;
+        tableBody.innerHTML = `<tr><td colspan="7" class="empty-row">${error.message}</td></tr>`;
     }
 }
 
@@ -193,16 +213,36 @@ form.addEventListener('submit', async (event) => {
 });
 
 tableBody.addEventListener('click', async (event) => {
-    const button = event.target.closest('button[data-action="retirar"]');
+    const button = event.target.closest('button[data-action]');
     if (!button) {
         return;
     }
 
-    try {
-        await apiFetch(`/encomendas/${button.dataset.id}/retirar`, { method: 'PUT' });
-        await carregarEncomendas();
-    } catch (error) {
-        alert(error.message);
+    if (button.dataset.action === 'retirar') {
+        try {
+            await apiFetch(`/encomendas/${button.dataset.id}/retirar`, { method: 'PUT' });
+            await carregarEncomendas();
+        } catch (error) {
+            alert(error.message);
+        }
+        return;
+    }
+
+    if (button.dataset.action === 'imprimir') {
+        try {
+            const encomendas = await apiFetch('/encomendas', { method: 'GET' });
+            const encomenda = encomendas.find((item) => item.id === button.dataset.id);
+            if (!encomenda) {
+                throw new Error('Não foi possível localizar a encomenda para impressão.');
+            }
+            abrirModalImpressao(
+                [encomenda],
+                'Impressão da etiqueta',
+                `Reimpressão do pacote ${encomenda.codigoFormatado}.`
+            );
+        } catch (error) {
+            alert(error.message);
+        }
     }
 });
 
@@ -211,13 +251,49 @@ previewPrintButton.addEventListener('click', () => {
         return;
     }
 
-    popularEtiqueta(ultimaEncomendaRegistrada);
-    printPreview.classList.remove('hidden');
-    printPreview.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    abrirModalImpressao(
+        [ultimaEncomendaRegistrada],
+        'Impressão da etiqueta',
+        `Etiqueta pronta para o código ${ultimaEncomendaRegistrada.codigoFormatado}.`
+    );
 });
 
+reprintPendingButton.addEventListener('click', async () => {
+    try {
+        const pendentes = await apiFetch('/encomendas/pendentes', { method: 'GET' });
+        if (!pendentes.length) {
+            alert('Não há pacotes pendentes para reimpressão.');
+            return;
+        }
+        abrirModalImpressao(
+            pendentes,
+            'Reimpressão de pacotes pendentes',
+            `${pendentes.length} etiqueta(s) pendente(s) pronta(s) para impressão.`
+        );
+    } catch (error) {
+        alert(error.message);
+    }
+});
+
+printModal.addEventListener('click', (event) => {
+    if (event.target.dataset.closeModal === 'true') {
+        fecharModalImpressao();
+    }
+});
+
+closePrintModalButton.addEventListener('click', fecharModalImpressao);
+
 printButton.addEventListener('click', () => {
+    if (!etiquetaAberta.length) {
+        return;
+    }
     window.print();
+});
+
+document.addEventListener('keydown', (event) => {
+    if (event.key === 'Escape' && !printModal.classList.contains('hidden')) {
+        fecharModalImpressao();
+    }
 });
 
 somentePendentes.addEventListener('change', carregarEncomendas);
