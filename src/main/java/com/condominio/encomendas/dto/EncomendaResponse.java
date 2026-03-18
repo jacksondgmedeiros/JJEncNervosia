@@ -6,6 +6,7 @@ import java.util.UUID;
 
 public record EncomendaResponse(
         UUID id,
+        Long identificadorGeral,
         String apartamento,
         String nomeMorador,
         String descricao,

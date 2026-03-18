@@ -35,6 +35,7 @@ class EncomendaControllerTest {
                         .content(body))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.codigoDiario").value(1))
+                .andExpect(jsonPath("$.identificadorGeral").value(1))
                 .andExpect(jsonPath("$.codigoFormatado").value("#001"))
                 .andExpect(jsonPath("$.cor").value("VERDE"))
                 .andExpect(jsonPath("$.status").value("PENDENTE"))
@@ -47,7 +48,8 @@ class EncomendaControllerTest {
 
         mockMvc.perform(get("/encomendas"))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$[0].apartamento").value("1203"));
+                .andExpect(jsonPath("$[0].apartamento").value("1203"))
+                .andExpect(jsonPath("$[0].identificadorGeral").value(1));
 
         mockMvc.perform(get("/encomendas/pendentes"))
                 .andExpect(status().isOk())

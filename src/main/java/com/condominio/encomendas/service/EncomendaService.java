@@ -35,6 +35,7 @@ public class EncomendaService {
         encomenda.setNomeMorador(normalizarTexto(request.getNomeMorador()));
         encomenda.setDescricao(normalizarTexto(request.getDescricao()));
         encomenda.setCodigoDiario(proximoCodigo);
+        encomenda.setIdentificadorGeral(obterProximoIdentificadorGeral());
         encomenda.setCor(definirCor(proximoCodigo));
         encomenda.setStatus(StatusEncomenda.PENDENTE);
         encomenda.setDataCriacao(agora);
@@ -98,6 +99,12 @@ public class EncomendaService {
                 .orElse(1);
     }
 
+    private Long obterProximoIdentificadorGeral() {
+        return encomendaRepository.findMaxIdentificadorGeral()
+                .map(identificadorAtual -> identificadorAtual + 1)
+                .orElse(1L);
+    }
+
     private String definirCor(Integer codigoDiario) {
         if (codigoDiario <= 20) {
             return "VERDE";
@@ -119,6 +126,7 @@ public class EncomendaService {
         String qrCodeBase64 = incluirQrCode ? qrCodeService.gerarQrCodeBase64(encomenda.getId().toString()) : null;
         return new EncomendaResponse(
                 encomenda.getId(),
+                encomenda.getIdentificadorGeral(),
                 encomenda.getApartamento(),
                 encomenda.getNomeMorador(),
                 encomenda.getDescricao(),
