@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Controle de Encomendas</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+<div class="app-shell">
+    <header class="topbar">
+        <div>
+            <p class="eyebrow">Portaria de condomínio</p>
+            <h1>Controle de Encomendas</h1>
+            <p class="subtitle">Registro rápido, QR Code imediato e visualização simples para retirada.</p>
+        </div>
+        <button id="refreshButton" class="secondary-button" type="button">Atualizar agora</button>
+    </header>
+
+    <main class="grid-layout">
+        <section class="card form-card">
+            <h2>Registrar encomenda</h2>
+            <form id="encomendaForm">
+                <label>
+                    Apartamento *
+                    <input id="apartamento" name="apartamento" type="text" placeholder="Ex: 1203" required>
+                </label>
+                <label>
+                    Nome do morador
+                    <input id="nomeMorador" name="nomeMorador" type="text" placeholder="Opcional">
+                </label>
+                <label>
+                    Descrição
+                    <textarea id="descricao" name="descricao" rows="3" placeholder="Ex: Caixa média da transportadora"></textarea>
+                </label>
+                <button class="primary-button" type="submit">Registrar Encomenda</button>
+                <p id="formMessage" class="form-message" aria-live="polite"></p>
+            </form>
+        </section>
+
+        <section class="card result-card">
+            <h2>Último registro</h2>
+            <div id="emptyState" class="empty-state">Cadastre uma encomenda para ver o QR Code e o código do dia.</div>
+            <div id="resultadoCadastro" class="hidden">
+                <div id="codigoGrande" class="codigo-destaque">#000</div>
+                <div id="corBadge" class="cor-badge">VERDE</div>
+                <img id="qrCodeImage" alt="QR Code da encomenda">
+                <p id="resultadoDescricao" class="result-description"></p>
+            </div>
+        </section>
+    </main>
+
+    <section class="card table-card">
+        <div class="table-header">
+            <div>
+                <h2>Encomendas registradas</h2>
+                <p>Atualização automática a cada 15 segundos.</p>
+            </div>
+            <label class="switch-label">
+                <input id="somentePendentes" type="checkbox">
+                Mostrar apenas pendentes
+            </label>
+        </div>
+
+        <div class="table-wrapper">
+            <table>
+                <thead>
+                <tr>
+                    <th>Apartamento</th>
+                    <th>Código</th>
+                    <th>Cor</th>
+                    <th>Status</th>
+                    <th>Data</th>
+                    <th>Ações</th>
+                </tr>
+                </thead>
+                <tbody id="encomendasTableBody">
+                <tr>
+                    <td colspan="6" class="loading-row">Carregando encomendas...</td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+    </section>
+</div>
+
+<script src="app.js"></script>
+</body>
+</html>
