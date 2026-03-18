@@ -21,10 +21,20 @@
         <section class="card form-card">
             <h2>Registrar encomenda</h2>
             <form id="encomendaForm">
-                <label>
-                    Apartamento *
-                    <input id="apartamento" name="apartamento" type="text" placeholder="Ex: 1203" required>
-                </label>
+                <div class="field-row">
+                    <label>
+                        Bloco *
+                        <select id="bloco" name="bloco" required>
+                            <option value="Bloco 1">Bloco 1</option>
+                            <option value="Bloco 2">Bloco 2</option>
+                            <option value="Bloco 3">Bloco 3</option>
+                        </select>
+                    </label>
+                    <label>
+                        Apartamento *
+                        <input id="apartamento" name="apartamento" type="text" placeholder="Ex: 1203" required>
+                    </label>
+                </div>
                 <label>
                     Nome do morador
                     <input id="nomeMorador" name="nomeMorador" type="text" placeholder="Opcional">
@@ -40,12 +50,35 @@
 
         <section class="card result-card">
             <h2>Último registro</h2>
-            <div id="emptyState" class="empty-state">Cadastre uma encomenda para ver o QR Code e o código do dia.</div>
+            <div id="emptyState" class="empty-state">Cadastre uma encomenda para ver o QR Code, o código do dia e a prévia da etiqueta.</div>
             <div id="resultadoCadastro" class="hidden">
                 <div id="codigoGrande" class="codigo-destaque">#000</div>
                 <div id="corBadge" class="cor-badge">VERDE</div>
-                <img id="qrCodeImage" alt="QR Code da encomenda">
-                <p id="resultadoDescricao" class="result-description"></p>
+                <div id="etiquetaResumo" class="etiqueta-resumo">
+                    <p id="resultadoNome" class="result-name"></p>
+                    <p id="resultadoDescricao" class="result-description"></p>
+                    <img id="qrCodeImage" alt="QR Code da encomenda">
+                    <p id="resultadoData" class="result-date"></p>
+                </div>
+                <button id="previewPrintButton" class="secondary-button hidden" type="button">Visualizar impressão da etiqueta</button>
+                <div id="printPreview" class="print-preview hidden">
+                    <div class="print-preview-header">
+                        <h3>Pré-visualização da etiqueta</h3>
+                        <button id="printButton" class="primary-button" type="button">Imprimir agora</button>
+                    </div>
+                    <div id="etiquetaImpressao" class="etiqueta-impressao">
+                        <p class="etiqueta-titulo">Etiqueta de Encomenda</p>
+                        <p id="printNomeMorador" class="etiqueta-nome"></p>
+                        <div id="printCorBadge" class="cor-badge etiqueta-cor">VERDE</div>
+                        <img id="printQrCodeImage" alt="QR Code da etiqueta">
+                        <div class="etiqueta-infos">
+                            <p><strong>Código:</strong> <span id="printCodigo"></span></p>
+                            <p><strong>Unidade:</strong> <span id="printApartamento"></span></p>
+                            <p><strong>Registrada em:</strong> <span id="printDataRegistro"></span></p>
+                            <p><strong>Descrição:</strong> <span id="printDescricao"></span></p>
+                        </div>
+                    </div>
+                </div>
             </div>
         </section>
     </main>
